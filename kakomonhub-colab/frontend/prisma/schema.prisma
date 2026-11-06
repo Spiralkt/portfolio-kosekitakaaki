@@ -1,0 +1,133 @@
+datasource db {
+  provider = "postgresql"
+  url      = env("DATABASE_URL")
+}
+
+generator client {
+  provider = "prisma-client-js"
+}
+
+model Note {
+    id          String      @id @default(uuid())
+    text        String
+    author      User        @relation(fields: [authorId], references: [id])
+    authorId    String
+    createdAt   DateTime    @default(now())
+    updatedAt   DateTime    @updatedAt @default(now())
+}
+
+enum Degree {
+  default
+  BACHELOR
+  MASTER
+  DOCTOR
+}
+
+model User {
+    id          String      @id @default(uuid())
+    email       String      @unique // probably i can use this @unique value for reference, preventing multiple accounts.
+    notes       Note[]
+    posts       Post[]
+    createdAt   DateTime    @default(now())
+    updatedAt   DateTime    @updatedAt @default(now())
+    likes       Like[]
+
+    lecturesRegistered    Lecture[] @relation("Registrar")
+    lecturesEdited        Lecture[] @relation("LastEditor")
+
+    lecturersRegistered   Lecturer[] @relation("Registrar")
+    lecturersEdited       Lecturer[] @relation("LastEditor")
+
+
+
+    institute    String   @default("Tohoku University")
+    department   String   @default("") // these tables should be added later.
+    course       String   @default("")
+
+    degree       Degree   @default(default) // for only showing the corresponding info. and, set default values on Posting kakomon.
+    year         Int      @default(0)
+    name         String   @default("John Doe")
+}
+
+model Post {
+    id          String      @id @default(uuid())
+    title       String
+    content     String
+    image_url   String
+
+    // this should be updated. restrict to be able to select known relationship for lecture_lecturer.
+    lecturer    Lecturer     @relation(fields: [lecturer_id], references: [id])
+    lecturer_id String
+    lecture     Lecture     @relation(fields: [lecture_id], references: [id])
+    lecture_id  String
+
+    author      User        @relation(fields: [authorId], references: [id])
+    authorId    String
+    createdAt   DateTime    @default(now())
+    updatedAt   DateTime    @updatedAt @default(now())
+    likes       Like[]
+}
+
+model Like {
+  id          String   @id @default(uuid())
+  postId     String
+  userId     String
+  createdAt  DateTime @default(now())
+  post        Post     @relation(fields: [postId], references: [id], onDelete: Cascade)
+  user        User     @relation(fields: [userId], references: [id])
+
+  @@unique([userId, postId])
+}
+
+model Lecturer {
+  id           String   @id @default(uuid())
+  name         String   
+  institute    String   @default("Tohoku University")
+
+  registrar    User     @relation("Registrar", fields: [registrarId], references: [id])
+  registrarId  String
+  createdAt    DateTime @default(now())
+
+  lastEditor   User     @relation("LastEditor", fields: [lastEditorId], references: [id])
+  lastEditorId String
+  updatedAt   DateTime    @updatedAt @default(now())
+
+  posts        Post[]
+  lecture_lecturer Lecture_Lecturer[]
+
+  aliases      String   @default("")  // for searching. e.g. english name
+  description  String   @default("")
+
+  department   String   @default("") // this should be a table.
+}
+
+model Lecture {
+  id           String      @id @default(uuid())
+  title        String   
+  semester     Int      @default(0) // required
+  institute    String   @default("Tohoku University")
+
+  registrar    User     @relation("Registrar", fields: [registrarId], references: [id])
+  registrarId  String
+  createdAt    DateTime @default(now())
+
+  lastEditor   User     @relation("LastEditor", fields: [lastEditorId], references: [id])
+  lastEditorId String
+  updatedAt   DateTime    @updatedAt @default(now())
+
+  posts        Post[]
+  lecture_lecturer Lecture_Lecturer[]
+
+  aliases      String   @default("")  // for searching. e.g. english name
+  description  String   @default("")  // optional
+
+  department   String   @default("") // this should be a table.
+}
+
+model Lecture_Lecturer {
+    id           String   @id @default(uuid())
+    lecturer    Lecturer     @relation(fields: [lecturer_id], references: [id], onDelete: Cascade)
+    lecturer_id String
+    lecture     Lecture     @relation(fields: [lecture_id], references: [id], onDelete: Cascade)
+    lecture_id  String
+}

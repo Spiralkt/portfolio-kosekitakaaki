@@ -1,0 +1,26 @@
+{
+  "name": "node.js project",
+  "build": {
+    "dockerfile": "Dockerfile"
+  },
+  "remoteUser": "node",
+
+  "customizations": {
+    "vscode": {
+      "extensions": [
+        "saoudrizwan.claude-dev",
+        "dbaeumer.vscode-eslint",
+        "christian-kohler.npm-intellisense",
+        "esbenp.prettier-vscode",
+        "prisma.prisma",
+        "supabase.vscode-supabase-extension",
+
+        "pkief.material-icon-theme",
+        "usernamehw.errorlens",
+
+        "google.geminicodeassist",
+        "cardinal90.multi-cursor-case-preserve"
+      ]
+    }
+  }
+}
